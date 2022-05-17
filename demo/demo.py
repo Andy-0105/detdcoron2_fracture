@@ -121,7 +121,7 @@ if __name__ == "__main__":
             if a.shape[0] == 0:
                 black_image = numpy.zeros((a.shape[1], a.shape[2]))
                 save_path=save()
-                cv2.imwrite(f"/home/j2031/detectron2/pre_out/{save_path}.jpg", black_image)
+                cv2.imwrite(f"/home/j2031/detectron2/mask/{save_path}.jpg", black_image)
             else:
                 x= numpy.zeros((a.shape[1], a.shape[2]))
                 for dim_0_i in range(a.shape[0]):
@@ -138,7 +138,7 @@ if __name__ == "__main__":
                 open_cv_image = numpy.array(pil)
                 # open_cv_image = open_cv_image[:, :, ::-1].copy()
                 ret, th = cv2.threshold(open_cv_image, 0.5, 255, cv2.THRESH_BINARY)
-                pil.save(f"/home/j2031/detectron2/pre_out/{save_path}.jpg")
+                cv2.imwrite(f"/home/j2031/detectron2_orchid/mask/{save_path}.png", th)
                 logger.info(
                     "{}: {} in {:.2f}s".format(
                         path,
