@@ -1,4 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
 import argparse
 import glob
 import multiprocessing as mp
@@ -9,18 +8,20 @@ import time
 import warnings
 import cv2
 import tqdm
-
+from PIL import Image
+import matplotlib
 from detectron2.config import get_cfg
 from detectron2.data.detection_utils import read_image
 from detectron2.utils.logger import setup_logger
-
 from predictor import VisualizationDemo
-from PIL import Image
-import numpy
+
 # constants
 WINDOW_NAME = "COCO detections"
 
-
+def save():
+    save_path=os.path.splitext(os.path.basename(path))[0]
+    cv2.imwrite(f"/home/j2031/detectron2/out/{save_path}.jpg",visualized_output.get_image()[:, :, ::-1])
+    return save_path
 def setup_cfg(args):
     # load config from file and command-line arguments
     cfg = get_cfg()
@@ -51,12 +52,12 @@ def get_parser():
         "--input",
         nargs="+",
         help="A list of space separated input images; "
-        "or a single glob pattern such as 'directory/*.jpg'",
+             "or a single glob pattern such as 'directory/*.jpg'",
     )
     parser.add_argument(
         "--output",
         help="A file or directory to save output visualizations. "
-        "If not given, will show output in an OpenCV window.",
+             "If not given, will show output in an OpenCV window.",
     )
 
     parser.add_argument(
@@ -89,10 +90,8 @@ def test_opencv_video_format(codec, file_ext):
         if os.path.isfile(filename):
             return True
         return False
-def save():
-    save_path=os.path.splitext(os.path.basename(path))[0]
-    cv2.imwrite(f"/home/j2031/detectron2/out/{save_path}.jpg",visualized_output.get_image()[:, :, ::-1])
-    return save_path
+
+
 if __name__ == "__main__":
     mp.set_start_method("spawn", force=True)
     args = get_parser().parse_args()
@@ -106,8 +105,8 @@ if __name__ == "__main__":
 
     if args.input:
         args.input=args.input[0]
-
         data_paths = [os.path.join(pth, f) for pth, dirs, files in os.walk(os.path.join(os.getcwd(), args.input)) for f in files]
+
         if len(args.input) == 1:
             args.input = glob.glob(os.path.expanduser(args.input[0]))
             assert args.input, "The input path(s) was not found"
@@ -115,52 +114,33 @@ if __name__ == "__main__":
             # use PIL, to be consistent with evaluation
             img = read_image(path, format="BGR")
             start_time = time.time()
-            predictions, visualized_output, predicted_img_tensor = demo.run_on_image(img)
-            a=predicted_img_tensor.data.cpu().numpy()
+            predictions, visualized_output = demo.run_on_image(img)
+            print(predictions["instances"].pred_boxes)
+            predicted_image_tensor=predictions["instances"].pred_boxes
+            print(type(predicted_image_tensor))
 
-            if a.shape[0] == 0:
-                black_image = numpy.zeros((a.shape[1], a.shape[2]))
-                save_path=save()
-                cv2.imwrite(f"/home/j2031/detectron2/pre_out/{save_path}.jpg", black_image)
-            else:
-                x= numpy.zeros((a.shape[1], a.shape[2]))
-                for dim_0_i in range(a.shape[0]):
-                    x=numpy.add(x,a[dim_0_i])
+            save_path=save()
 
-                a[0]=x
-                a=a[0]
-
-                pil=Image.fromarray(numpy.uint8(a))
-                save_path=save()
-                # cv2image=cv2.cvtColor(numpy.array(pil),cv2.THRESH_BINARY)
-                # cv2gimage=cv2.threshold(cv2image,0.5,255,cv2.THRESH_BINARY)
-                # cv2.imwrite(f"/home/j2031linux3090/detectron2/pre_out/{save_path}.jpg", cv2image)
-                open_cv_image = numpy.array(pil)
-                # open_cv_image = open_cv_image[:, :, ::-1].copy()
-                ret, th = cv2.threshold(open_cv_image, 0.5, 255, cv2.THRESH_BINARY)
-                pil.save(f"/home/j2031/detectron2/pre_out/{save_path}.jpg")
-                logger.info(
-                    "{}: {} in {:.2f}s".format(
-                        path,
-                        "detected {} instances".format(len(predictions["instances"]))
-                        if "instances" in predictions
-                        else "finished",
-                        time.time() - start_time,
+            logger.info(
+                "{}: {} in {:.2f}s".format(
+                    path,
+                    "detected {} instances".format(len(predictions["instances"]))
+                    if "instances" in predictions
+                    else "finished",
+                    time.time() - start_time,
                     )
-                )
+            )
 
-                if args.output:
-                    if os.path.isdir(args.output):
-                        assert os.path.isdir(args.output), args.output
-                        out_filename = os.path.join(args.output, os.path.basename(path))
-                    else:
-                        assert len(args.input) == 1, "Please specify a directory with args.output"
-                        out_filename = args.output
-                    visualized_output.save(out_filename)
+            if args.output:
+                if os.path.isdir(args.output):
+                    assert os.path.isdir(args.output), args.output
+                    out_filename = os.path.join(args.output, os.path.basename(path))
                 else:
-                    # save_path=os.path.splitext(os.path.basename(path))[0]
-                    save()
-                    # cv2.imwrite(f"/home/j2031linux3090/detectron2/out/{save_path}.jpg",visualized_output.get_image()[:, :, ::-1])
+                    assert len(args.input) == 1, "Please specify a directory with args.output"
+                    out_filename = args.output
+                visualized_output.save(out_filename)
+            else:
+                save()
 
     elif args.webcam:
         assert args.input is None, "Cannot have both --input and --webcam!"
@@ -215,8 +195,3 @@ if __name__ == "__main__":
             output_file.release()
         else:
             cv2.destroyAllWindows()
-
-# cd demo/
-# python demo.py --config-file ../configs/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml \
-#        --input input9.png \
-# --opts MODEL.WEIGHTS ../output/model_final.pth

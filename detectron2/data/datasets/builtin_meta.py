@@ -18,7 +18,7 @@ COCO model (with correct class names and colors).
 # All coco categories, together with their nice-looking visualization colors
 # It's from https://github.com/cocodataset/panopticapi/blob/master/panoptic_coco_categories.json
 COCO_CATEGORIES = [
-    {"color": [220, 20, 60], "isthing": 1, "id": 1, "name": "person"},
+    {"color": [220, 20, 60], "isthing": 1, "id": 1, "name": "fracture"},
     {"color": [119, 11, 32], "isthing": 1, "id": 2, "name": "bicycle"},
     {"color": [0, 0, 142], "isthing": 1, "id": 3, "name": "car"},
     {"color": [0, 0, 230], "isthing": 1, "id": 4, "name": "motorcycle"},

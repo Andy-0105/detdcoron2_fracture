@@ -4,12 +4,15 @@ import bisect
 import multiprocessing as mp
 from collections import deque
 import cv2
+import numpy
 import torch
-
+from torchvision import transforms
 from detectron2.data import MetadataCatalog
 from detectron2.engine.defaults import DefaultPredictor
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
+from PIL import Image
+import os
 
 
 class VisualizationDemo(object):
@@ -46,11 +49,13 @@ class VisualizationDemo(object):
         """
         vis_output = None
         predictions = self.predictor(image)
-        # Convert image from OpenCV BGR format to Matplotlib RGB format.
-        image = image[:, :, ::-1]
+
+        img=predictions["instances"].pred_masks
+        image = image[:, :, ::-1]       # Convert image from OpenCV BGR format to Matplotlib RGB format.
         visualizer = Visualizer(image, self.metadata, instance_mode=self.instance_mode)
         if "panoptic_seg" in predictions:
             panoptic_seg, segments_info = predictions["panoptic_seg"]
+
             vis_output = visualizer.draw_panoptic_seg_predictions(
                 panoptic_seg.to(self.cpu_device), segments_info
             )
@@ -63,7 +68,8 @@ class VisualizationDemo(object):
                 instances = predictions["instances"].to(self.cpu_device)
                 vis_output = visualizer.draw_instance_predictions(predictions=instances)
 
-        return predictions, vis_output
+        return predictions, vis_output,img
+        # return predictions, vis_output, img
 
     def _frame_from_video(self, video):
         while video.isOpened():
@@ -218,3 +224,6 @@ class AsyncPredictor:
     @property
     def default_buffer_size(self):
         return len(self.procs) * 5
+
+   # Instances(num_instances=1, image_height=2688, image_width=2688, fields=[pred_boxes: Boxes(tensor([[ 406.0945, 1451.9690,  475.3970, 1556.4147]], device='cuda:0')), scores: tensor([0.9878], device='cuda:0'), pred_classes: tensor([0], device='cuda:0'), pred_masks: tensor([[]], device='cuda:0')])
+

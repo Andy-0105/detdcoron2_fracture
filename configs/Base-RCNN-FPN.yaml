@@ -30,8 +30,8 @@ MODEL:
     NUM_CONV: 4
     POOLER_RESOLUTION: 14
 DATASETS:
-  TRAIN: ("coco_2017_train",)
-  TEST: ("coco_2017_val",)
+  TRAIN: ("coco_raw_train",) # 修改與上面一致
+  TEST: ("coco_raw_val",) # 修改與上面一致
 SOLVER:
   IMS_PER_BATCH: 16
   BASE_LR: 0.02

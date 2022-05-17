@@ -45,6 +45,13 @@ _PREDEFINED_SPLITS_COCO["coco"] = {
     "coco_2017_test": ("coco/test2017", "coco/annotations/image_info_test2017.json"),
     "coco_2017_test-dev": ("coco/test2017", "coco/annotations/image_info_test-dev2017.json"),
     "coco_2017_val_100": ("coco/val2017", "coco/annotations/instances_val2017_100.json"),
+    #新註冊的資料集，注意路徑別寫錯了，以及註冊的名字如coco_raw_train別寫錯了
+    "coco_raw_train": ("coco_raw/train2017", "coco_raw/annotations/raw_train.json"),
+    "coco_raw_val": ("coco_raw/val2017", "coco_raw/annotations/raw_val.json"),
+    #"coco_raw_frcnn_train": ("coco_raw/train2017", "coco_raw/annotations/raw_train.json"),
+    #"coco_raw_frcnn_val": ("coco_raw/val2017", "coco_raw/annotations/raw_val.json"),
+
+
 }
 
 _PREDEFINED_SPLITS_COCO["coco_person"] = {
